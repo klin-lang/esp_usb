@@ -1,0 +1,61 @@
+/// ESP-IDF TinyUSB CDC-ACM device — thin Klin surface over `cdc_idf.c`.
+/// USB OTG silicon + TinyUSB stack; Klin does not hide those costs.
+/// Not part of `machine_esp`. Sibling of `esp_wifi` / `esp_eth` / `esp_ble`.
+/// Distinct from RP `UsbCdc` poll in `machine_rp`.
+///
+/// `@v0.1.0` device CDC: init / connected (DTR) / read / write / stop.
+module esp_usb
+
+@[link("cdc_idf.c")]
+@[cinclude("cdc_idf.h")]
+@[cimport, cheader, codename("klin_usb_cdc_init")]
+fn klin_usb_cdc_init(): i32
+
+@[cimport, cheader, codename("klin_usb_cdc_connected")]
+fn klin_usb_cdc_connected(): i32
+
+@[cimport, cheader, codename("klin_usb_cdc_read")]
+fn klin_usb_cdc_read(out: *mut u8, max_len: i32): i32
+
+@[cimport, cheader, codename("klin_usb_cdc_write")]
+fn klin_usb_cdc_write(data: *u8, len: i32): i32
+
+@[cimport, cheader, codename("klin_usb_cdc_stop")]
+fn klin_usb_cdc_stop(): i32
+
+@[cimport, cheader, codename("klin_usb_cdc_rx_max")]
+fn klin_usb_cdc_rx_max(): i32
+
+/// `ESP_OK` (0).
+pub fn err_ok(): i32 {
+    return 0
+}
+
+/// Fixed RX staging capacity (bytes).
+pub fn cdc_rx_max(): i32 {
+    return klin_usb_cdc_rx_max()
+}
+
+/// Install TinyUSB + CDC-ACM0. Returns IDF `esp_err_t` as `i32`.
+pub fn cdc_init(): i32 {
+    return klin_usb_cdc_init()
+}
+
+/// Host opened the port (DTR asserted).
+pub fn cdc_connected(): bool {
+    return klin_usb_cdc_connected() != 0
+}
+
+/// Copy staged RX bytes into `out`. Returns length (0 if empty).
+pub fn cdc_read(out: *mut u8, max_len: i32): i32 {
+    return klin_usb_cdc_read(out, max_len)
+}
+
+/// Queue + flush bytes to the host. Returns bytes accepted.
+pub fn cdc_write(data: *u8, len: i32): i32 {
+    return klin_usb_cdc_write(data, len)
+}
+
+pub fn cdc_stop(): i32 {
+    return klin_usb_cdc_stop()
+}
