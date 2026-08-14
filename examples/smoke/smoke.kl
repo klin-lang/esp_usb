@@ -1,0 +1,33 @@
+// emit-c smoke (no ESP-IDF).
+import "../../esp_usb" usb
+
+fn main() {
+  let mut e = usb.cdc_init()
+  if e != usb.err_ok() {
+    return
+  }
+  if !usb.cdc_connected() {
+    return
+  }
+  if usb.cdc_rx_max() != 256 {
+    return
+  }
+  let mut buf: [8]u8
+  let n = usb.cdc_read(cast(*mut u8, &buf[0]), 8)
+  if n < 1 {
+    return
+  }
+  let mut hi: [4]u8
+  hi[0] = 111
+  hi[1] = 107
+  hi[2] = 10
+  hi[3] = 0
+  let w = usb.cdc_write(cast(*u8, &hi[0]), 3)
+  if w != 3 {
+    return
+  }
+  let _s = usb.cdc_stop()
+  if usb.version() != 1 {
+    return
+  }
+}

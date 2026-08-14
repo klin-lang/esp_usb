@@ -1,0 +1,43 @@
+// ESP32-S3 TinyUSB CDC via klin-lang/esp_usb @v0.1.0.
+//   make emit && make build && make flash
+import "../../esp_usb" usb
+
+@[cexport, codename("klin_app_main")]
+fn app_main_klin() {
+  let mut e = usb.cdc_init()
+  if e != usb.err_ok() {
+    return
+  }
+
+  while !usb.cdc_connected() {
+    let mut i: i32 = 0
+    while i < 1000000 {
+      i = i + 1
+    }
+  }
+
+  let mut hi: [6]u8
+  hi[0] = 107
+  hi[1] = 108
+  hi[2] = 105
+  hi[3] = 110
+  hi[4] = 10
+  hi[5] = 0
+  let _w = usb.cdc_write(cast(*u8, &hi[0]), 5)
+
+  while usb.cdc_connected() {
+    let mut buf: [64]u8
+    let n = usb.cdc_read(cast(*mut u8, &buf[0]), 64)
+    if n > 0 {
+      let _e = usb.cdc_write(cast(*u8, &buf[0]), n)
+    }
+    let mut j: i32 = 0
+    while j < 100000 {
+      j = j + 1
+    }
+  }
+}
+
+fn main() {
+  app_main_klin()
+}
